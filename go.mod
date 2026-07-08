@@ -1,6 +1,6 @@
 module github.com/operasoftware/cnpg-plugin-pgbackrest
 
-go 1.26.5
+go 1.26.4
 
 require (
 	github.com/blang/semver v3.5.1+incompatible

@@ -6,7 +6,7 @@
 # Pgbackrest is taken from the package available in the official Postgres repo.
 
 # Build the manager binary
-FROM --platform=$BUILDPLATFORM golang:1.26.5 AS gobuilder
+FROM --platform=$BUILDPLATFORM golang:1.26.4 AS gobuilder
 ARG TARGETOS
 ARG TARGETARCH
 
@@ -36,6 +36,7 @@ RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache
 
 FROM debian:12-slim AS pgbackrestinstaller
 RUN apt-get update && \
+    apt-get upgrade -y && \
     apt-get install -y postgresql-common && \
     /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y && \
     apt-get install -y pgbackrest
