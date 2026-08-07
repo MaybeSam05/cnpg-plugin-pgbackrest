@@ -259,12 +259,26 @@ type DataBackupConfiguration struct {
 // Console (stdout) logging is intentionally not configurable: the plugin
 // reserves stdout for the machine-readable JSON emitted by "info --output=json".
 // Use LevelStderr for pod-log verbosity (defaults to "warn" when unset).
+// Use LevelFile and Path together for on-disk file logging.
 type LogConfiguration struct {
 	// Log level for messages written to stderr.
 	// Defaults to "warn".
 	// +optional
 	// +kubebuilder:validation:Enum=off;error;warn;info;detail;debug;trace
 	LevelStderr string `json:"levelStderr,omitempty"`
+
+	// Log level for messages written to log files.
+	// When unset no file logging option is passed to pgBackRest.
+	// Requires a writable Path to be useful.
+	// +optional
+	// +kubebuilder:validation:Enum=off;error;warn;info;detail;debug;trace
+	LevelFile string `json:"levelFile,omitempty"`
+
+	// Path is the directory where pgBackRest writes log files.
+	// It must point to a writable directory. When unset no log path option is
+	// passed to pgBackRest.
+	// +optional
+	Path string `json:"path,omitempty"`
 }
 
 // DataRestoreConfiguration is the configuration of the main backup restore process
@@ -369,7 +383,8 @@ type PgbackrestConfiguration struct {
 	// The logging configuration applied to all pgBackRest commands.
 	// When not defined, stderr logging is set to "warn". Console (stdout)
 	// logging is always pinned to "off" so that the JSON emitted by
-	// "info --output=json" stays parseable.
+	// "info --output=json" stays parseable. File logging is enabled only when
+	// LevelFile and Path are set.
 	// +optional
 	Log *LogConfiguration `json:"log,omitempty"`
 }
