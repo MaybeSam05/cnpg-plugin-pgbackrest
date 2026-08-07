@@ -38,6 +38,9 @@ const (
 
 	// The configured stderr log level under test.
 	stderrLevel = "debug"
+
+	logPath   = "/controller/tmp/pgbackrest-logs"
+	fileLevel = "debug"
 )
 
 type logConfigTestResources struct {
@@ -51,6 +54,22 @@ func createLogConfigTestResources(namespace string) logConfigTestResources {
 	archive := objectstore.NewMinioArchive(namespace, archiveName, minio, 1)
 	archive.Spec.Configuration.Log = &pgbackrestApi.LogConfiguration{
 		LevelStderr: stderrLevel,
+	}
+
+	return logConfigTestResources{
+		ObjectStoreResources: objectstore.NewMinioObjectStoreResources(namespace, minio),
+		Archive:              archive,
+		Cluster:              newClusterWithPlugin(namespace),
+		Backup:               newPluginBackup(namespace),
+	}
+}
+
+func createLogFileConfigTestResources(namespace string) logConfigTestResources {
+	archive := objectstore.NewMinioArchive(namespace, archiveName, minio, 1)
+	archive.Spec.Configuration.Log = &pgbackrestApi.LogConfiguration{
+		LevelStderr: stderrLevel,
+		LevelFile:   fileLevel,
+		Path:        logPath,
 	}
 
 	return logConfigTestResources{
