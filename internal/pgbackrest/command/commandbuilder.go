@@ -43,6 +43,11 @@ func CloudWalRestoreOptions(
 		return nil, err
 	}
 
+	options, err = AppendLogOptionsFromConfiguration(ctx, options, configuration)
+	if err != nil {
+		return nil, err
+	}
+
 	stanza := clusterName
 	if len(configuration.Stanza) != 0 {
 		stanza = configuration.Stanza
@@ -242,14 +247,13 @@ func AppendLogOptionsFromConfiguration(
 
 // appendLogOptions takes an options array and adds the pgbackrest logging options.
 // When no log configuration is provided it preserves the historical defaults:
-// stderr at "warn" and no file logging.
+// stderr at "warn".
 //
 // Console logging is always pinned to "off" and is deliberately not
 // configurable: the plugin reserves stdout for the machine-readable JSON emitted
 // by "info --output=json", so any console output would corrupt catalog parsing.
 // pgBackRest's own default for log-level-console is "warn", so we must pass the
-// flag explicitly rather than rely on the default. Pod-log verbosity is
-// controlled via stderr, and on-disk detail via file logging.
+// flag explicitly rather than rely on the default.
 func appendLogOptions(
 	_ context.Context,
 	options []string,
@@ -257,9 +261,9 @@ func appendLogOptions(
 ) ([]string, error) {
 	stderrLevel := "warn"
 
-	logConfig := configuration.Log
-	if logConfig != nil {
-		if logConfig.LevelStderr != "" {
+	if configuration != nil {
+		logConfig := configuration.Log
+		if logConfig != nil && logConfig.LevelStderr != "" {
 			stderrLevel = logConfig.LevelStderr
 		}
 	}

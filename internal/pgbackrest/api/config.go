@@ -253,8 +253,8 @@ type DataBackupConfiguration struct {
 	AdditionalCommandArgs []string `json:"additionalCommandArgs,omitempty"`
 }
 
-// LogConfiguration controls the pgBackRest logging destinations and
-// verbosity levels. All fields are optional.
+// LogConfiguration controls pgBackRest stderr logging verbosity.
+// All fields are optional.
 //
 // Console (stdout) logging is intentionally not configurable: the plugin
 // reserves stdout for the machine-readable JSON emitted by "info --output=json".
@@ -366,7 +366,8 @@ type PgbackrestConfiguration struct {
 	// +optional
 	Stanza string `json:"stanza,omitempty"`
 
-	// The logging configuration applied to all pgBackRest commands.
+	// The logging configuration for pgBackRest commands invoked by the plugin
+	// (backup, restore, stanza-create, info, archive-push, and archive-get).
 	// When not defined, stderr logging is set to "warn". Console (stdout)
 	// logging is always pinned to "off" so that the JSON emitted by
 	// "info --output=json" stays parseable.
@@ -396,6 +397,18 @@ func (cfg *WalBackupConfiguration) AppendAdditionalArchiveGetCommandArgs(options
 	return appendAdditionalCommandArgs(cfg.RestoreAdditionalCommandArgs, options)
 }
 
+// reservedLogOptions are managed exclusively via spec.configuration.log and must
+// not be set through additionalCommandArgs fields.
+var reservedLogOptions = map[string]struct{}{
+	"--log-level-stderr":  {},
+	"--log-level-console": {},
+}
+
+func isReservedLogOption(key string) bool {
+	_, reserved := reservedLogOptions[key]
+	return reserved
+}
+
 func appendAdditionalCommandArgs(additionalCommandArgs []string, options []string) []string {
 	optionKeys := map[string]bool{}
 	for _, option := range options {
@@ -406,7 +419,7 @@ func appendAdditionalCommandArgs(additionalCommandArgs []string, options []strin
 	}
 	for _, additionalCommandArg := range additionalCommandArgs {
 		key := strings.Split(additionalCommandArg, "=")[0]
-		if key == "" || slices.Contains(options, key) || optionKeys[key] {
+		if key == "" || isReservedLogOption(key) || slices.Contains(options, key) || optionKeys[key] {
 			continue
 		}
 		options = append(options, additionalCommandArg)

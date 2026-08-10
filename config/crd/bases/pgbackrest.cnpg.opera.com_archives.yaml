@@ -104,7 +104,8 @@ spec:
                     type: object
                   log:
                     description: |-
-                      The logging configuration applied to all pgBackRest commands.
+                      The logging configuration for pgBackRest commands invoked by the plugin
+                      (backup, restore, stanza-create, info, archive-push, and archive-get).
                       When not defined, stderr logging is set to "warn". Console (stdout)
                       logging is always pinned to "off" so that the JSON emitted by
                       "info --output=json" stays parseable.

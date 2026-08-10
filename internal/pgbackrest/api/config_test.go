@@ -145,6 +145,18 @@ var _ = Describe("appendAdditionalCommandArgs", func() {
 		updatedOptions := appendAdditionalCommandArgs(additionalCommandArgs, options)
 		Expect(updatedOptions).To(Equal([]string{"--option1=abc", "--option2"}))
 	})
+
+	It("should ignore reserved log options managed by spec.configuration.log", func() {
+		options := []string{"--option1"}
+		additionalCommandArgs := []string{
+			"--log-level-stderr=debug",
+			"--log-level-console=info",
+			"--option2",
+		}
+
+		updatedOptions := appendAdditionalCommandArgs(additionalCommandArgs, options)
+		Expect(updatedOptions).To(Equal([]string{"--option1", "--option2"}))
+	})
 })
 
 var _ = Describe("Pgbackrest credentials", func() {
